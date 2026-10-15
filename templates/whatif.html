@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}What-if | Panic Meter{% endblock %}
+{% block content %}
+<main class="dash">
+  <div class="page-head">
+    <div><h1>What-if simulator</h1><p>Try changes and see how your Panic Score would react. Nothing is saved.</p></div>
+    <div class="head-actions"><a class="btn line" href="/dashboard">Back to dashboard</a></div>
+  </div>
+
+  {% if result %}
+  <section class="kpis">
+    <div class="kpi"><div><b>{{ result.before }}</b><span>Current score · {{ result.level_before }}</span></div></div>
+    <div class="kpi"><div><b>{{ result.after }}</b><span>After changes · {{ result.level_after }}</span></div></div>
+    <div class="kpi"><div><b>{{ result.diff }}</b><span>{% if result.diff > 0 %}Score reduced{% elif result.diff < 0 %}Score increased{% else %}No change{% endif %}</span></div></div>
+  </section>
+  {% endif %}
+
+  <div class="panel">
+    <div class="ph"><h2>Pending tasks (current score: {{ before }})</h2></div>
+    {% if tasks %}
+    <form method="POST">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Task</th><th>Type</th><th>Deadline</th><th>Extra hours done</th><th>Extend deadline (days)</th><th>Complete?</th></tr></thead>
+          <tbody>
+          {% for t in tasks %}
+            <tr>
+              <td><b>{{ t.title }}</b></td>
+              <td>{{ t.type }}</td>
+              <td>{{ t.deadline }}</td>
+              <td><input type="number" name="hours_{{ t.id }}" min="0" step="0.5" value="0" style="width:80px"></td>
+              <td><input type="number" name="days_{{ t.id }}" min="0" step="1" value="0" style="width:80px"></td>
+              <td><input type="checkbox" name="complete_{{ t.id }}"></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px"><button class="btn" type="submit">Simulate</button></p>
+    </form>
+    {% else %}
+    <p class="empty">No pending tasks. Add a task on the dashboard first.</p>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

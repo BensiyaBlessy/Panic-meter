@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Smart schedule | Panic Meter{% endblock %}
+{% block content %}
+<main class="dash">
+  <div class="page-head">
+    <div><h1>Smart schedule</h1><p>Your next 14 days, planned automatically. Most urgent task first, within {{ cap|round(1) }}h per day.</p></div>
+    <div class="head-actions">
+      <button class="btn line" type="button" onclick="window.print()"><i data-lucide="printer"></i>Print</button>
+      <a class="btn line" href="/dashboard">Back to dashboard</a>
+    </div>
+  </div>
+
+  {% if risk %}
+  <div class="alerts">
+    {% for t in risk %}
+      <div class="alert red"><span class="al-dot"></span>{{ t.title }} cannot be finished before its deadline. It is short by {{ t.left|round(1) }}h. Increase your daily study hours or move the deadline.</div>
+    {% endfor %}
+  </div>
+  {% elif any_work %}
+  <div class="alert ok"><span class="al-dot"></span>Every task fits before its deadline with this plan.</div>
+  {% else %}
+  <div class="panel"><p class="empty">No pending tasks. Add a task on the dashboard to get a schedule.</p></div>
+  {% endif %}
+
+  <div class="sch-grid">
+    {% for d in plan %}
+    <div class="day-card {% if d.date == today %}today{% endif %}">
+      <div class="day-top"><b>{{ d.date.strftime("%a %d %b") }}</b>{% if d.date == today %}<span class="badge green">Today</span>{% endif %}</div>
+      {% if d.entries %}
+        {% for e in d.entries %}
+          <div class="slot"><span class="dotc {{ e.type }}"></span><span class="slot-t">{{ e.title }}</span><b>{{ e.hours }}h</b></div>
+        {% endfor %}
+        <progress value="{{ d.total }}" max="{{ cap }}"></progress>
+        <small>{{ d.total }}h of {{ cap|round(1) }}h planned</small>
+      {% else %}
+        <p class="empty">Free day</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

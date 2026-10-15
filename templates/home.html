@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Panic Meter | Know how close your deadlines really are{% endblock %}
+{% block content %}
+<section class="hero2">
+  <div>
+    <span class="eyebrow"><i data-lucide="sparkles"></i>Built for students</span>
+    <h1>Know how close your <span>deadlines</span> really are.</h1>
+    <p class="lead">Add your exams, records, assignments and projects. Panic Meter turns them into one score from 0 to 100 and tells you exactly what to work on today.</p>
+    <div class="cta">
+      {% if session.user_id %}
+        <a class="btn big" href="/dashboard">Open dashboard<i data-lucide="arrow-right"></i></a>
+      {% else %}
+        <a class="btn big" href="/register">Get started free<i data-lucide="arrow-right"></i></a>
+        <a class="btn big line" href="/login">Log in</a>
+      {% endif %}
+    </div>
+    <p class="fine">Free to use. No email verification.</p>
+  </div>
+
+  <div class="preview">
+    <div class="gauge-wrap"><canvas id="demo" data-score="72"></canvas>
+      <div class="gauge-text"><div class="score">72</div><div class="level">Panic</div></div></div>
+    <p class="msg">Time to start working right now!</p>
+    <div class="mini">
+      <div class="mini-row"><span>DBMS Record</span><b>2.4h today</b></div>
+      <div class="mini-row"><span>Maths Exam</span><b>3.0h today</b></div>
+      <div class="mini-row"><span>Java Assignment</span><b>0.6h today</b></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="sec-head"><h2>Everything you need to beat your deadlines</h2><p>One dashboard. Six tools that work together.</p></div>
+  <div class="feat-grid">
+    <div class="feat"><div class="kpi-ic"><i data-lucide="gauge"></i></div><h3>Panic Score</h3><p>One number from 0 to 100 that shows how heavy your workload really is.</p></div>
+    <div class="feat"><div class="kpi-ic"><i data-lucide="calendar-check"></i></div><h3>Daily plan</h3><p>See how many hours each task needs today, sorted from most to least urgent.</p></div>
+    <div class="feat"><div class="kpi-ic"><i data-lucide="bell-ring"></i></div><h3>Deadline alerts</h3><p>Get warned about tasks that are overdue, due today or due tomorrow.</p></div>
+    <div class="feat"><div class="kpi-ic"><i data-lucide="trending-up"></i></div><h3>Workload forecast</h3><p>A 7-day chart that shows which days will be overloaded, based on your study hours.</p></div>
+    <div class="feat"><div class="kpi-ic"><i data-lucide="timer"></i></div><h3>Focus timer</h3><p>Study in focused sessions. The time you focus is logged to your task automatically.</p></div>
+    <div class="feat"><div class="kpi-ic"><i data-lucide="trophy"></i></div><h3>Achievements</h3><p>Unlock badges as you finish tasks and keep your panic score low.</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="sec-head"><h2>How it works</h2></div>
+  <div class="steps">
+    <div class="step"><span class="num">1</span><h3>Add your tasks</h3><p>Enter the type, deadline and hours needed for each task.</p></div>
+    <div class="step"><span class="num">2</span><h3>Check your score</h3><p>The gauge shows how much pressure you are under right now.</p></div>
+    <div class="step"><span class="num">3</span><h3>Follow today's plan</h3><p>Work on the top task first and watch your score go down.</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="sec-head"><h2>Four levels of panic</h2></div>
+  <div class="grid4">
+    <div class="lv" style="--c:#2ecc71"><b>0 – 30</b>Chill</div>
+    <div class="lv" style="--c:#f1c40f"><b>31 – 60</b>Careful</div>
+    <div class="lv" style="--c:#e67e22"><b>61 – 80</b>Panic</div>
+    <div class="lv" style="--c:#e74c3c"><b>81 – 100</b>Red Alert</div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="cta-band">
+    <h2>Ready to take control of your deadlines?</h2>
+    <p>Create a free account and see your panic score in under a minute.</p>
+    {% if session.user_id %}
+      <a class="btn big" href="/dashboard">Open dashboard</a>
+    {% else %}
+      <a class="btn big" href="/register">Create free account</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/gauge.js"></script><script>drawGauge("demo");</script>{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Edit task | Panic Meter{% endblock %}
+{% block content %}
+<div class="auth">
+  <h1>Edit task</h1>
+  <p class="sub">Change the details and save.</p>
+  <form method="POST">
+    <label>Task name<input name="title" value="{{ t.title }}" required></label>
+    <label>Type
+      <select name="type">
+        {% for ty in ["Exam", "Assignment", "Record", "Project"] %}
+          <option {% if ty == t.type %}selected{% endif %}>{{ ty }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Deadline<input type="date" name="deadline" value="{{ t.deadline }}" required></label>
+    <label>Hours needed<input type="number" step="0.5" min="0.5" name="hours" value="{{ t.hours_needed }}" required></label>
+    <button class="btn big full" type="submit">Save changes</button>
+  </form>
+  <p class="alt"><a href="/dashboard">Cancel</a></p>
+</div>
+{% endblock %}

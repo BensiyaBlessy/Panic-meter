@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Log in | Panic Meter{% endblock %}
+{% block content %}
+<div class="split">
+  <aside class="split-art">
+    <h2>Stop guessing.<br>Start planning.</h2>
+    <p>Log in to see your panic score and today's plan.</p>
+    <ul class="art-list">
+      <li><span class="kpi-ic"><i data-lucide="gauge"></i></span>One score for all your deadlines</li>
+      <li><span class="kpi-ic"><i data-lucide="calendar-check"></i></span>A daily plan sorted by urgency</li>
+      <li><span class="kpi-ic"><i data-lucide="bell-ring"></i></span>Alerts before tasks go overdue</li>
+    </ul>
+  </aside>
+  <section class="split-form">
+    <div class="auth">
+      <h1>Welcome back</h1>
+      <p class="sub">Log in to your account.</p>
+      <form method="POST">
+        <label>Email<input type="email" name="email" required autofocus></label>
+        <label>Password<input type="password" name="password" required></label>
+        <button class="btn big full" type="submit">Log in</button>
+      </form>
+      <p class="alt">New here? <a href="/register">Create an account</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

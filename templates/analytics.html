@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Analytics | Panic Meter{% endblock %}
+{% block content %}
+<main class="dash">
+  <div class="page-head">
+    <div><h1>Analytics</h1><p>See where your time and stress are going.</p></div>
+    <div class="head-actions"><a class="btn line" href="/dashboard">Back to dashboard</a></div>
+  </div>
+
+  <section class="kpis">
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="clipboard-list"></i></div><div><b>{{ kpi.planned }}h</b><span>Hours planned</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="check"></i></div><div><b>{{ kpi.done }}h</b><span>Hours done</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="gauge"></i></div><div><b>{{ kpi.avg }}</b><span>Average score</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="flame"></i></div><div><b>{{ kpi.peak }}</b><span>Highest score</span></div></div>
+  </section>
+
+  {% if not data.titles %}<div class="panel"><p class="empty">Add some tasks on the dashboard to see your analytics.</p></div>{% endif %}
+
+  <div class="grid-2">
+    <div class="panel"><div class="ph"><h2>Tasks by type</h2></div><div class="trend-wrap"><canvas id="types"></canvas></div></div>
+    <div class="panel"><div class="ph"><h2>Hours per task</h2></div><div class="trend-wrap"><canvas id="hours"></canvas></div></div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Panic trend</h2></div>
+    <div class="trend-wrap"><canvas id="trend"></canvas></div>
+  </div>
+  <script id="trend-data" type="application/json">{{ trend|tojson }}</script>
+  <script id="an-data" type="application/json">{{ data|tojson }}</script>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/gauge.js"></script>
+<script>
+  drawTrend("trend");
+  var d = JSON.parse(document.getElementById("an-data").textContent);
+  var colors = { Exam: "#e74c3c", Record: "#ff6b35", Project: "#4c9aff", Assignment: "#16a34a" };
+  var names = Object.keys(d.types);
+  var grid = "rgba(138,152,173,.25)", tick = "#8a98ad";
+  new Chart(document.getElementById("types"), {
+    type: "doughnut",
+    data: { labels: names, datasets: [{ data: names.map(function (n) { return d.types[n]; }),
+            backgroundColor: names.map(function (n) { return colors[n]; }), borderWidth: 0 }] },
+    options: { maintainAspectRatio: false, cutout: "62%", plugins: { legend: { position: "bottom", labels: { color: tick } } } }
+  });
+  new Chart(document.getElementById("hours"), {
+    type: "bar",
+    data: { labels: d.titles, datasets: [
+      { label: "Done", data: d.done, backgroundColor: "#16a34a", borderRadius: 4 },
+      { label: "Left", data: d.left, backgroundColor: "#ff6b35", borderRadius: 4 } ] },
+    options: { indexAxis: "y", maintainAspectRatio: false,
+      scales: { x: { stacked: true, ticks: { color: tick }, grid: { color: grid } },
+                y: { stacked: true, ticks: { color: tick }, grid: { display: false } } },
+      plugins: { legend: { labels: { color: tick } } } }
+  });
+</script>
+{% endblock %}

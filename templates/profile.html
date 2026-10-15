@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Profile | Panic Meter{% endblock %}
+{% block content %}
+<main class="dash profile">
+  <div class="panel pf-head">
+    <div class="pf-avatar">{{ u.name[0]|upper }}</div>
+    <div>
+      <h1>{{ u.name }}</h1>
+      <p>{{ u.email }}</p>
+      <p>{{ total }} tasks added · {{ done }} completed · studies {{ u.daily_hours|round(1) }}h per day</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Change name</h2></div>
+    <form action="/profile/name" method="POST" class="pf-form">
+      <label>Full name<input name="name" value="{{ u.name }}" required></label>
+      <button class="btn" type="submit">Save name</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Change password</h2></div>
+    <form action="/profile/password" method="POST" class="pf-form">
+      <label>Current password<input type="password" name="current" required></label>
+      <label>New password (min 6 characters)<input type="password" name="new" minlength="6" required></label>
+      <button class="btn" type="submit">Update password</button>
+    </form>
+  </div>
+
+  <div class="panel danger">
+    <div class="ph"><h2>Delete account</h2></div>
+    <p>This permanently deletes your account and all your tasks. It cannot be undone.</p>
+    <form action="/profile/delete" method="POST" onsubmit="return confirm('Delete your account and all tasks permanently?')" class="pf-form">
+      <button class="btn red" type="submit">Delete my account</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

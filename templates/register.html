@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sign up | Panic Meter{% endblock %}
+{% block content %}
+<div class="auth">
+  <h1>Create your account</h1>
+  <p class="sub">Takes 10 seconds. No email verification.</p>
+  <form method="POST">
+    <label>Full name<input name="name" required autofocus></label>
+    <label>Email<input type="email" name="email" required></label>
+    <label>Password (min 6 characters)<input type="password" name="password" minlength="6" required></label>
+    <button class="btn big full" type="submit">Sign up</button>
+  </form>
+  <p class="alt">Already registered? <a href="/login">Log in</a></p>
+</div>
+{% endblock %}

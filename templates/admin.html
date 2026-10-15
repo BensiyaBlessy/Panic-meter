@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Admin | Panic Meter{% endblock %}
+{% block content %}
+<main class="dash">
+  <div class="page-head">
+    <div><h1>Admin panel</h1><p>Overview of all users. Only you can see this page.</p></div>
+    <div class="head-actions"><a class="btn line" href="/dashboard">Back to dashboard</a></div>
+  </div>
+
+  <section class="kpis">
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="users"></i></div><div><b>{{ kpi.users }}</b><span>Total users</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="list-checks"></i></div><div><b>{{ kpi.tasks }}</b><span>Total tasks</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="check"></i></div><div><b>{{ kpi.done }}</b><span>Tasks completed</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="gauge"></i></div><div><b>{{ kpi.avg }}</b><span>Average score</span></div></div>
+  </section>
+
+  <div class="panel">
+    <div class="ph"><h2>Users</h2></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Tasks</th><th>Done</th><th>Panic score</th><th></th></tr></thead>
+        <tbody>
+        {% for u in rows %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td><b>{{ u.name }}</b>{% if u.id == session.user_id %} <span class="tag">You</span>{% endif %}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.tasks }}</td>
+            <td>{{ u.done }}</td>
+            <td><span class="lvl {{ u.level|replace(' ', '') }}">{{ u.score }} · {{ u.level }}</span></td>
+            <td>
+              {% if u.id != session.user_id %}
+              <form action="/admin/delete/{{ u.id }}" method="POST" onsubmit="return confirm('Delete this user and all their tasks?')">
+                <button class="btn sm red" type="submit">Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+{% endblock %}

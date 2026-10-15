@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Panic Meter{% endblock %}
+{% block content %}
+{% set hours_left = plan|sum(attribute="remaining")|round(1) %}
+{% set due_week = plan|selectattr("days_left", "le", 7)|list|length %}
+{% set pct = (stats.done * 100 / stats.total)|round|int if stats.total else 0 %}
+<main class="dash">
+  <div class="page-head">
+    <div>
+      <h1>Hi {{ session.name.split()[0] }}, here is your day.</h1>
+      <p>Your workload at a glance.</p>
+    </div>
+    <div class="head-actions">
+      <a class="btn line" href="/export"><i data-lucide="download"></i>Export</a>
+      <button class="btn" type="button" data-open-dlg><i data-lucide="plus"></i>New task</button>
+    </div>
+  </div>
+
+  {% if alerts %}
+  <div class="alerts">
+    {% for color, text in alerts %}
+      <div class="alert {{ color }}"><span class="al-dot"></span>{{ text }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div id="alert-data" data-count="{{ alerts|length }}"></div>
+
+  <section class="kpis">
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="list-checks"></i></div><div><b>{{ stats.total }}</b><span>Total tasks</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="clock"></i></div><div><b>{{ hours_left }}h</b><span>Hours left</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="calendar-clock"></i></div><div><b>{{ due_week }}</b><span>Due in 7 days</span></div></div>
+    <div class="kpi"><div class="kpi-ic"><i data-lucide="trophy"></i></div><div><b>{{ pct }}%</b><span>Completed</span></div></div>
+  </section>
+
+  <div class="grid-top">
+    <div class="panel meter">
+      <div class="gauge-wrap"><canvas id="gauge" data-score="{{ score }}"></canvas>
+        <div class="gauge-text"><div class="score">{{ score }}</div><div class="level">{{ level }}</div></div></div>
+      <p class="msg">{{ msg }}</p>
+      <div class="stats">
+        <div><b>{{ stats.total }}</b>Tasks</div>
+        <div><b>{{ stats.done }}</b>Completed</div>
+        <div><b class="{% if stats.overdue %}bad{% endif %}">{{ stats.overdue }}</b>Overdue</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Today's plan</h2></div>
+      {% if plan %}
+        <ol class="plan">
+          {% for t in plan %}
+          <li><span><b>{{ t.title }}</b> <span class="tag">{{ t.type }}</span>
+            {% if t.overdue %}<span class="badge red">Overdue</span>{% endif %}</span>
+            <em>{{ t.per_day }}h today</em></li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="empty">Nothing pending. Add a task to get started.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">
+      <h2>Workload check</h2>
+      <form action="/settings/hours" method="POST" class="cap-form">
+        <label class="cap-label">I can study
+          <input type="number" name="hours" step="0.5" min="0.5" max="16" value="{{ capacity.available }}" required>
+          hours per day</label>
+        <button class="btn sm">Save</button>
+      </form>
+    </div>
+    {% if capacity.over %}
+      <div class="alert red"><span class="al-dot"></span>You need {{ capacity.required }}h per day but have only {{ capacity.available }}h. You are short by {{ capacity.gap }}h every day.</div>
+    {% elif plan %}
+      <div class="alert ok"><span class="al-dot"></span>You need {{ capacity.required }}h per day and you have {{ capacity.available }}h. You are within your limit.</div>
+    {% else %}
+      <p class="empty">No pending tasks, so no workload.</p>
+    {% endif %}
+    <h3 class="fc-title">Next 7 days: hours of work needed per day</h3>
+    <div class="trend-wrap"><canvas id="forecast"></canvas></div>
+    <script id="forecast-data" type="application/json">{{ forecast|tojson }}</script>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="ph"><h2>Panic trend</h2></div>
+      <p class="sub-note">A new point is added every time your score changes.</p>
+      <div class="trend-wrap"><canvas id="trend"></canvas></div>
+      <script id="trend-data" type="application/json">{{ trend|tojson }}</script>
+    </div>
+
+    <div class="stack">
+      <div class="panel" id="focus">
+        <div class="ph"><h2>Focus timer</h2></div>
+        <div class="focus-grid">
+          <div class="focus-time" id="focus-time">25:00</div>
+          <div class="focus-controls">
+            <select id="focus-task">
+              {% for t in plan %}<option value="{{ t.id }}">{{ t.title }}</option>
+              {% else %}<option value="">No pending tasks</option>{% endfor %}
+            </select>
+            <select id="focus-min">
+              <option value="25" selected>25 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+              <option value="1">1 min (quick test)</option>
+            </select>
+            <button type="button" class="btn" id="focus-start">Start</button>
+            <button type="button" class="btn line" id="focus-reset">Reset</button>
+          </div>
+        </div>
+        <div class="focus-done" id="focus-done" hidden>
+          <span id="focus-done-msg"></span>
+          <button type="button" class="btn green" id="focus-log-btn">Log hours</button>
+        </div>
+        <form id="focus-log" method="POST" hidden><input type="hidden" name="done_hours" id="focus-hours"></form>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h2>Achievements</h2></div>
+        <div class="ach-list">
+          {% for b in badges %}
+          <div class="ach {% if b.on %}on{% endif %}">
+            <span class="ach-icon">{{ b.icon }}</span>
+            <div><b>{{ b.name }}</b><small>{{ b.desc }}</small></div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="list-head">
+      <h2>All tasks</h2>
+      <div class="filters">
+        <button type="button" class="chip active" data-filter="all">All</button>
+        <button type="button" class="chip" data-filter="pending">Pending</button>
+        <button type="button" class="chip" data-filter="done">Done</button>
+        <button type="button" class="chip" data-filter="overdue">Overdue</button>
+      </div>
+    </div>
+    <input id="search" class="search" type="search" placeholder="Search tasks by name">
+
+    {% for t in tasks %}
+    <div class="task {% if t.done %}done{% endif %}"
+         data-title="{{ t.title|lower }}"
+         data-done="{{ 1 if t.done else 0 }}"
+         data-overdue="{{ 1 if t.overdue else 0 }}">
+      <div class="task-info">
+        <b>{{ t.title }}</b> <span class="tag">{{ t.type }}</span>
+        {% if t.overdue %}<span class="badge red">Overdue</span>{% endif %}
+        {% if t.done %}<span class="badge green">Done</span>{% endif %}
+        <div class="small">Due {{ t.deadline }} ({{ t.days_left }} days) · {{ t.hours_done }} / {{ t.hours_needed }}h done</div>
+        <progress value="{{ t.hours_done }}" max="{{ t.hours_needed }}"></progress>
+      </div>
+      <div class="task-actions">
+        {% if not t.done %}
+        <form action="/progress/{{ t.id }}" method="POST" class="inline">
+          <input type="number" step="0.5" min="0.5" name="done_hours" placeholder="hrs" required>
+          <button class="btn sm">Log hours</button>
+        </form>
+        <form action="/complete/{{ t.id }}" method="POST" class="inline"><button class="btn sm green">Complete</button></form>
+        {% endif %}
+        <a class="btn sm line" href="/edit/{{ t.id }}">Edit</a>
+        <form action="/delete/{{ t.id }}" method="POST" class="inline" onsubmit="return confirm('Delete this task?')"><button class="btn sm red">Delete</button></form>
+      </div>
+    </div>
+    {% else %}
+      <p class="empty">No tasks yet. Click "New task" to add your first one.</p>
+    {% endfor %}
+    <p id="no-match" class="empty" hidden>No tasks match your search.</p>
+  </div>
+</main>
+
+<dialog id="task-dlg">
+  <h2>New task</h2>
+  <p class="sub-note">Add a deadline and the hours you think it needs.</p>
+  <form action="/add" method="POST" class="dlg-form">
+    <label>Task name<input name="title" placeholder="e.g. DBMS record" required></label>
+    <label>Type
+      <select name="type"><option>Exam</option><option>Assignment</option><option>Record</option><option>Project</option></select>
+    </label>
+    <label>Deadline<input type="date" name="deadline" required></label>
+    <label>Hours needed<input type="number" step="0.5" min="0.5" name="hours" placeholder="e.g. 6" required></label>
+    <div class="dlg-actions">
+      <button type="button" class="btn line" id="dlg-cancel">Cancel</button>
+      <button type="submit" class="btn">Add task</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script src="/static/gauge.js"></script>
+<script>
+  drawGauge("gauge"); drawTrend("trend"); drawForecast("forecast");
+  var dlg = document.getElementById("task-dlg");
+  document.querySelectorAll("[data-open-dlg]").forEach(function (b) { b.onclick = function () { dlg.showModal(); }; });
+  document.getElementById("dlg-cancel").onclick = function () { dlg.close(); };
+</script>
+{% endblock %}

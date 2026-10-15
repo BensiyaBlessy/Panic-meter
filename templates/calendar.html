@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Calendar | Panic Meter{% endblock %}
+{% block content %}
+<main class="dash">
+  <div class="page-head">
+    <div><h1>Calendar</h1><p>Every deadline in one view. Click a task to edit it.</p></div>
+    <div class="head-actions"><a class="btn line" href="/dashboard">Back to dashboard</a></div>
+  </div>
+  <div class="panel">
+    <div class="cal-head">
+      <h2>{{ title }}</h2>
+      <div class="cal-nav">
+        <a class="btn sm line" href="/calendar?m={{ prev }}">&larr; Prev</a>
+        <a class="btn sm line" href="/calendar">Today</a>
+        <a class="btn sm line" href="/calendar?m={{ nxt }}">Next &rarr;</a>
+      </div>
+    </div>
+    <div class="cal">
+      {% for d in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] %}<div class="cal-dow">{{ d }}</div>{% endfor %}
+      {% for week in weeks %}{% for day in week %}
+        <div class="cal-day {% if day.month != first.month %}off{% endif %} {% if day == today %}today{% endif %}">
+          <span class="d">{{ day.day }}</span>
+          {% for t in by_day.get(day, []) %}
+            <a class="pill {{ t.type }} {% if t.done %}done{% endif %} {% if t.overdue %}late{% endif %}" href="/edit/{{ t.id }}" title="{{ t.title }} ({{ t.type }})">{{ t.title }}</a>
+          {% endfor %}
+        </div>
+      {% endfor %}{% endfor %}
+    </div>
+    <div class="legend">
+      <span><i style="background:#e74c3c"></i>Exam</span><span><i style="background:#ff6b35"></i>Record</span>
+      <span><i style="background:#4c9aff"></i>Project</span><span><i style="background:#16a34a"></i>Assignment</span>
+    </div>
+  </div>
+</main>
+{% endblock %}
